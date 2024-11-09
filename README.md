@@ -21,6 +21,6 @@ docker compose up -d && docker compose logs -f
 ```
 cd nginx-conf
 cp -v sample.conf-inactive my-site.conf
-sed -i "s/example.com/my-site.com" my-site.conf
+sed -i "s/example.com/my-site.com/g" my-site.conf
 docker compose restart
 ```
