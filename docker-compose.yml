@@ -1,0 +1,41 @@
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:alpine
+    volumes:
+      - ./nginx-conf:/etc/nginx/conf.d
+      - ./sys/certs:/etc/nginx/certs:ro # Certificates are sourced from here.
+      - ./sys/html:/usr/share/nginx/html # This one is shared to pass ACME challenge.
+      - ./sites:/var/www
+    environment:
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+    env_file: ./.env
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - CHOWN
+      - NET_BIND_SERVICE
+    ports:
+      - 80:80/tcp
+      - 443:443/tcp
+    restart: always
+    stop_grace_period: 0s
+
+  acme:
+    container_name: acme
+    image: nginxproxy/acme-companion:latest
+    depends_on:
+      - nginx
+    volumes:
+      - ./sys/certs:/etc/nginx/certs
+      - ./sys/html:/usr/share/nginx/html
+      - ./sys/acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Needed for ACME to discover other containers and their LETSENCRYPT_HOST variables.
+    environment:
+      - NGINX_DOCKER_GEN_CONTAINER=nginx
+      - NGINX_PROXY_CONTAINER=nginx
+      - DEFAULT_EMAIL=your-email@example.com
+    restart: always
+    stop_grace_period: 0s
