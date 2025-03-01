@@ -1,7 +1,8 @@
 services:
   nginx:
     container_name: nginx
-    image: nginx:alpine
+    build:
+      dockerfile: Dockerfile
     volumes:
       - ./nginx-conf:/etc/nginx/conf.d
       - ./sys/certs:/etc/nginx/certs:ro # Certificates are sourced from here.
